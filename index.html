@@ -80,12 +80,12 @@
 </head>
 <body>
   <h1>One to Many Sequence Aligner</h1>
-  <p>Type the keyword in the first input field and the text in the second input field. The output will display the text with the first instance of the keyword highlighted per line.</p>
+  <p>Enter the wildtype sequence in the first box. This will be the sequence that all others will be compared to, and may be shorter than the others. Paste the reads into the second box, and each line will be attempted to be aligned to the wildtype sequence. The output will display each line, as best aligned to the wildtype sequence, with the mismatches and indels highlighted in each line.<br>The aligner used is a modified affine fitting, with the parameters match:+1, mismatch:-&#189;, indelBegin:-1&#189;, indelContinue:-0.4. This means that indels will try to be grouped together, if it makes sense.</p>
   <input type="text" id="keyword" placeholder="Enter wild type sequence (or the sequence to compare to)" spellcheck="false">
   <textarea id="text" placeholder="Paste reads here. They can extend beyond the target sequence." spellcheck="false"></textarea>
   <div class="output" id="output"><span class="output-text" id="output-text"><br></span></div>
   <button id="download-btn" class="disabled-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path fill="#2DC770" d="M16.293 9.293L17.707 10.707L12 16.414L6.29297 10.707L7.70697 9.293L11 12.586V2H13V12.586L16.293 9.293ZM18 20V18H20V20C20 21.102 19.104 22 18 22H6C4.896 22 4 21.102 4 20V18H6V20H18Z"/></svg></button>
-  <p>Known Issues:<br>1) Download button doesn't work as expected. (download button needs tweaks)<br>2) Double mismatch between different lines can create weird indels. (multialigner needs fix)</p>
+  <p>Known Issues:<br>1) Download button doesn't work as expected. (download button needs tweaks)<br>2) Double mismatch between different lines can create weird indels. (multialigner needs fix)<br>3) Alignment parameters should be adjustable, but that isn't an option yet.</p>
   <footer>Happy Aligning!<br>Created by Stanley S. 2023<br>This code is available for reuse under the MIT license.</footer>
 
   <script type="text/javascript">

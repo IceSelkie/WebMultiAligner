@@ -85,7 +85,13 @@
   <textarea id="text" placeholder="Paste reads here. They can extend beyond the target sequence." spellcheck="false"></textarea>
   <div class="output" id="output"><span class="output-text" id="output-text"><br></span></div>
   <button id="download-btn" class="disabled-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path fill="#2DC770" d="M16.293 9.293L17.707 10.707L12 16.414L6.29297 10.707L7.70697 9.293L11 12.586V2H13V12.586L16.293 9.293ZM18 20V18H20V20C20 21.102 19.104 22 18 22H6C4.896 22 4 21.102 4 20V18H6V20H18Z"/></svg></button>
-  <p>Known Issues:<br>1) Download button doesn't work as expected. (download button needs tweaks)<br>2) Double mismatch between different lines can create weird indels. (multialigner needs fix)<br>3) Alignment parameters should be adjustable, but that isn't an option yet.</p>
+  <p>Known Issues:<br>
+    1) Download button doesn't work as expected. (download button needs tweaks)<br>
+    2) Double mismatch between different lines can create weird indels. (multialigner needs fix)<br>
+    3) Alignment parameters should be adjustable, but that isn't an option yet.</p>
+  <p>Recently Fixed Issues:<br>
+    4) Long lines can have line breaks in the output, which can be confusing.<br>
+    5) Long deletions (2 or more) would show up as only a single nucleotide deletion. Related: multiple dashes in a row would be formatted weird.</p>
   <footer>Happy Aligning!<br>Created by Stanley S. 2023<br>This code is available for reuse under the MIT license.</footer>
 
   <script type="text/javascript">
@@ -99,9 +105,19 @@
     }
 
     function highlight() {
-      const keyword = keywordInput.value || 'ATGGATTCTAGAACAGTTGGTATATTAGGAGGGGGACAATTGGGACGTATGATTGTTGAGGCAGCAAACAGGCTCAACATTAAGACGGTAATACTAGATGCTGAAAATTCTC';
-      const text = textInput.value;
-      const lines = text.split(/\n+/).filter(line => line.trim() !== '');
+      const lines = (
+          textInput.value
+            .split(/\n+/)
+            .map(line => line.replaceAll(/\s+/g,""))
+            .filter(line => line !== '')
+        );
+      const keyword = (
+          keywordInput.value.replaceAll(/\s+/g,"")
+          ||
+          lines[0]
+          ||
+          'ATGGATTCTAGAACAGTTGGTATATTAGGAGGGGGACAATTGGGACGTATGATTGTTGAGGCAGCAAACAGGCTCAACATTAAGACGGTAATACTAGATGCTGAAAATTCTC'
+        );
 
       if (lines.length === 0) {
         outputText.textContent = '';
@@ -116,7 +132,6 @@
       outputText.textContent = '';
 
       alignments.forEach(line => {
-        line = line.replaceAll("\u200B","");
         changes = [...line].map((char,i)=>
             (((master[i]=="-")^(master[i-1]=="-"))
               || ((char=="-")^(line[i-1]=="-"))
@@ -131,12 +146,15 @@
           const partM = masterParts[index];
           if (partL == partM) {
             if (partL[0]=="-")
-              outputText.appendChild(document.createTextNode(" ".repeat(partL.length)));
+              // Put spaces if both are deletions: this is when another line has an insertion here.
+              // This space is a "nbsp" or non-breaking space: it prevents line breaks here while visually being blank.
+              outputText.appendChild(document.createTextNode("\u00A0".repeat(partL.length)));
             else
               outputText.appendChild(document.createTextNode(partL));
           } else if (partL[0]=="-") {
             const markElement = document.createElement('mark');
-            markElement.textContent = partL;
+            // Add "Word-Joiner" after dashes to prevent line breaks after them, and prevent font from joining long dashes.
+            markElement.textContent = partL.replaceAll("-","-\u2060");
             markElement.classList.add("deletion");
             outputText.appendChild(markElement);
           } else if (partM[0]=="-") {
